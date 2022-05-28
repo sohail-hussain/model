@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<log4php:configuration xmlns:log4php="http://logging.apache.org/log4php/">
+
+    <appender name="default" class="LoggerAppenderEcho">
+        <layout class="LoggerLayoutPattern">
+            <param name="ConversionPattern" value="%d [%p] %m (%.-20location)%n" />
+        </layout>
+     </appender>
+    <root>
+        <level value="DEBUG" />
+        <appender_ref ref="default" />
+    </root>
+
+</log4php:configuration>
