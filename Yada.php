@@ -21,7 +21,7 @@ $nProcessed = 0;
 while (true) {
     $thisMessage = $MessagesHelper->getNextMessage();
     $nProcessed++;
-    if ($nProcessed > 20) {
+    if ($nProcessed > 150) {
         break;
     }
     
@@ -39,7 +39,7 @@ while (true) {
     $timeInEastern = DateTime::createFromFormat('Y-m-d H:i:s', $thisMessage['timeInEastern']);
     $yearWeek = $created->format("YW");
 //     $logger->info("type yearWeek " . gettype($yearWeek));
-    $logger->info("$nProcessed: nAlertsAfter10: $numberOfAlertsSeenSince10Am yearWeek=$yearWeek timeInEastern=" . $timeInEastern->format('Y-m-d H:i:s'));
+    $logger->info("$nProcessed: nAlertsAfter10: $numberOfAlertsSeenSince10Am type={$thisMessage['message_type']} yearWeek=$yearWeek timeInEastern=" . $timeInEastern->format('Y-m-d H:i:s'));
 
     
     if ($MessagesHelper->isNewDay() === true) {
@@ -52,11 +52,11 @@ while (true) {
         $numberOfAlertsSeenSince10Am = 0;
     }
     
-    $thisHistory = $ApiHistoryHelper->getTheApiHistory($yearWeek, "getOptionChain", $thisMessage['created']);
-    if ($thisHistory == null) {
-//         $logger->info("skipping.no chain... created={$thisMessage['created']}");
-        continue;
-    }
+//     $thisHistory = $ApiHistoryHelper->getTheApiHistory($yearWeek, "getOptionChain", $thisMessage['created']);
+//     if ($thisHistory == null) {
+// //         $logger->info("skipping.no chain... created={$thisMessage['created']}");
+//         continue;
+//     }
     if ($MessagesHelper->isInFirst30Min($timeInEastern) === true) {
         $logger->info("skipping first 30 min");
         $logger->info("skipping first 30 min =" . $MessagesHelper->isInFirst30Min($timeInEastern) . "=");
@@ -72,7 +72,7 @@ while (true) {
         continue;
     }
 //     $logger->info("would buy now {$thisMessage['message_type']}");
-    $BuySellHelper->processMessage($thisMessage, $thisHistory);
+    $BuySellHelper->processMessage($thisMessage);
 //     if (count($messages) != $size || count($messages) == 0 || $nProcessed > 0) {
 //         break;
 //     } else {

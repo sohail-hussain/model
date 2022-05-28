@@ -14,7 +14,7 @@ class TdaOptionChain {
 
     $logger->trace("findBestOption(act=$action, callChain, priceT=$priceThreshold)");
 
-    $logger->info("callChain: " . strlen(json_encode($callChain)));
+//     $logger->info("callChain: " . strlen(json_encode($callChain)));
 
     $numberOfContracts = $callChain['numberOfContracts'];
     if ($action == "PUT") {
@@ -22,7 +22,7 @@ class TdaOptionChain {
     } else {
         $expDateMap = $callChain['callExpDateMap'];
     }
-    $logger->info("expDateMap: " . strlen(json_encode($expDateMap)));
+//     $logger->info("expDateMap: " . strlen(json_encode($expDateMap)));
     if (strlen(json_encode($expDateMap)) == 2) {
         $logger->info("callChain: " . json_encode($callChain));
     }

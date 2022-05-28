@@ -13,7 +13,7 @@ class MessagesHelper {
         global $Property;
         
         $this->allowedIps = $Property->getProperty(PROP_ALLOWED_IPS);
-        $this->lastCreatedRead = "2022-04-07 07:10:01";
+        $this->lastCreatedRead = "2022-03-18 05:25:01";
         $this->lastDateProcessed = $this->lastCreatedRead;
         $this->interval = DateInterval::createFromDateString('3 hour');
         
