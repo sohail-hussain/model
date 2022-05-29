@@ -11,6 +11,8 @@ class ApiHistory extends Db {
         // Create connection
         parent::getConnection('data', __FILE__, __LINE__);
         
+        $logger->info("getDataByTypeAndDates($suffix, $type, $before, $after)");
+        
         $sql = "SELECT * FROM mp_apihistory$suffix where message_type=? and created >= ? and created <= ? order by created ";
         parent::prepareStatement($sql, __FILE__, __LINE__);
         $this->stmt->bind_param("sss", $type, $before, $after);

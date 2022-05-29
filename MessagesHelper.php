@@ -13,7 +13,7 @@ class MessagesHelper {
         global $Property;
         
         $this->allowedIps = $Property->getProperty(PROP_ALLOWED_IPS);
-        $this->lastCreatedRead = "2022-03-18 05:25:01";
+        $this->lastCreatedRead = "2022-05-19 04:25:02";
         $this->lastDateProcessed = $this->lastCreatedRead;
         $this->interval = DateInterval::createFromDateString('3 hour');
         
@@ -46,6 +46,22 @@ class MessagesHelper {
         return false;
     }
     
+    public function isMarketOpen(object $theDate) : bool {
+        global $logger;
+        $logger->info("isMarketOpen(" . $theDate->format('Y-m-d H:i:s') . " hour=" . $theDate->format('H') . " min=" . $theDate->format('i'));
+        if ($theDate->format('H') > 15 || $theDate->format('H') < 9) {
+            $logger->info("returning false hour");
+            return false;
+        }
+        if ($theDate->format('H') == 9 && $theDate->format('i') < 30) {
+            $logger->info("returning false 9-930");
+            return false;
+        }
+        $logger->info("returning true");
+        return true;
+    }
+    
+    
     public function getMessageFromDb() {
 //         global $logger;
         global $Messages;
@@ -54,6 +70,9 @@ class MessagesHelper {
             // keep getting the message from db - until we have a valid ip
 //             $logger->info("getNextMessage() lastCreatedRead=" . $this->lastCreatedRead);
             $theMessages = $Messages->getNextMessage($this->lastCreatedRead);
+            if (count($theMessages) == 0) {
+                return null;
+            }
             //         $logger->info("type " . gettype($thisMessage));
             //         $logger->info("read " . json_encode($thisMessage));
 //             $logger->info("thisIp {$theMessages[0]['message_from']} allowed=$this->allowedIps");
@@ -62,6 +81,7 @@ class MessagesHelper {
                 return $theMessages[0];
             }
         }
+        return null;
     } // getMessageFromDb
     
     public function getTimeInEastern(string $theTime) {
@@ -74,6 +94,9 @@ class MessagesHelper {
         global $logger;
     
         $thisMessage = $this->getMessageFromDb();
+        if ($thisMessage == null) {
+            return null;
+        }
         
         $timeInEastern = DateTime::createFromFormat('Y-m-d H:i:s', $thisMessage['created']);
         $timeInEastern->add($this->interval);
@@ -94,6 +117,4 @@ class MessagesHelper {
 
 }
 
-$MessagesHelper = new MessagesHelper();
-$MessagesHelper->init();
 ?>

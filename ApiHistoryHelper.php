@@ -9,26 +9,36 @@ class ApiHistoryHelper {
     } // init
     
     public function getTheApiHistory(string $action, string $type, string $theDate) {
-//         global $logger;
+        global $logger;
         global $ApiHistory;
-        
+
+        $logger->info("getTheApiHistory($action, $type, $theDate)");
 
         $before = DateTime::createFromFormat('Y-m-d H:i:s', $theDate);
-        $yearWeek = $before->format("YW");
-        $after = $before;
         $before->sub($this->interval);
+        
+        $after = DateTime::createFromFormat('Y-m-d H:i:s', $theDate);
         $after->add($this->interval);
+        
+        $yearWeek = $before->format("YW");
+
         $apiHistories = $ApiHistory->getDataByTypeAndDates('_' . $yearWeek, $type, $before->format('Y-m-d H:i:s'), $after->format('Y-m-d H:i:s'));
+        $logger->info("n histories found " . count($apiHistories));
+        
         foreach ($apiHistories as $thisHistory) {
             $theJson = json_decode($thisHistory['message_received'], true);
+//             $logger->info("type ofthe json " . gettype($theJson));
+            $logger->info("just read id={$thisHistory['id']} time={$thisHistory['created']} len=" . strlen($thisHistory['message_received']) . " call=" . isset($theJson['callExpDateMap']) . " put=" . isset($theJson['putExpDateMap']));
             if ($action == 'CALL' && isset($theJson['callExpDateMap']) && strlen(json_encode($theJson['callExpDateMap'])) > 2) {
+//                 $logger->info("id= call len=" .  strlen(json_encode($theJson['callExpDateMap'])));
                 return $theJson;
 //             }
 //                 $hasCall = true;
 //             } else {
 //                 $hasCall = false;
 //             }
-            } else if (isset($theJson['putExpDateMap']) && strlen(json_encode($theJson['putExpDateMap'])) > 2) {
+            } else if ($action == 'PUT' && isset($theJson['putExpDateMap']) && strlen(json_encode($theJson['putExpDateMap'])) > 2) {
+//                 $logger->info("id= put-$action- len=" .  strlen(json_encode($theJson['putExpDateMap'])));
                 return $theJson;
 //             } else {
 //                 $hasPut = false;

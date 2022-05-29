@@ -1,8 +1,14 @@
 <?php
 
 require_once 'MessagesHelper.php';
+$MessagesHelper = new MessagesHelper();
+$MessagesHelper->init();
+
 require_once 'ApiHistoryHelper.php';
 require_once 'BuySellHelper.php';
+$BuySellHelper = new BuySellHelper();
+
+$logger = Logger::getLogger('mypredictory');
 
 print("hello\n");
 $endOfData = false;
@@ -21,13 +27,14 @@ $nProcessed = 0;
 while (true) {
     $thisMessage = $MessagesHelper->getNextMessage();
     $nProcessed++;
-    if ($nProcessed > 150) {
+    if ($nProcessed > 2500) {
         break;
     }
     
     
     
-    if ($endOfData) {
+    if ($thisMessage == null) {
+        $BuySellHelper->sellAll("12:45:00", "15:45:00");
         exit("end of data");
     }
 //     if (isset($thisMessage['tx'])) {
@@ -45,7 +52,7 @@ while (true) {
     if ($MessagesHelper->isNewDay() === true) {
         $logger->info("found new day");
         if ($sellAtEndOfDay) {
-            $BuySellHelper->sellAll("15:45:00");
+            $BuySellHelper->sellAll("12:45:00", "15:45:00");
         } else {
             exit("do not know what to do with sellAtEndOfDay=$sellAtEndOfDay");
         }
@@ -57,17 +64,22 @@ while (true) {
 // //         $logger->info("skipping.no chain... created={$thisMessage['created']}");
 //         continue;
 //     }
-    if ($MessagesHelper->isInFirst30Min($timeInEastern) === true) {
+    if ($MessagesHelper->isMarketOpen($timeInEastern) === false) {
+        $logger->info("market is closed");
+//         $logger->info("skipping first 30 min =" . $MessagesHelper->isInFirst30Min($timeInEastern) . "=");
+        continue;
+    }
+    if ($MessagesHelper->isInFirst30Min($timeInEastern) === true && $skipFirst30Min) {
         $logger->info("skipping first 30 min");
         $logger->info("skipping first 30 min =" . $MessagesHelper->isInFirst30Min($timeInEastern) . "=");
         continue;
     }
-    if ($MessagesHelper->isLast15Min($timeInEastern) === true) {
+    if ($MessagesHelper->isLast15Min($timeInEastern) === true && $doNotBuyAtEnd) {
         $logger->info("skipping last 15 mins");
         continue;
     }
     $numberOfAlertsSeenSince10Am++;
-    if ($numberOfAlertsSeenSince10Am == 1) {
+    if ($numberOfAlertsSeenSince10Am == 1 && $skipFirstMessage) {
         $logger->info("skipping first alert after 10 AM");
         continue;
     }

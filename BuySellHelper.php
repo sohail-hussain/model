@@ -7,23 +7,14 @@ class BuySellHelper
 
     // private $interval = null;
     private $balance = 2500.0;
-
     private $percentage = 5;
-
     private $cutoffPercentage = 50;
-
     private $threshold = 50;
-
     private $lastAction = "";
-
     private $bestLast = "";
-
     private $bestStrikePrice = "";
-
     private $bestSymbol = "";
-
     private $purchaseTimeInEastern;
-
     private $purchaseTimeInPhoenix;
 
     public function setBalance(float $value)
@@ -46,14 +37,14 @@ class BuySellHelper
         $this->threshold = $value;
     }
 
-    public function sellAll(string $theTime)
+    public function sellAll(string $phxTime, string $easternTime)
     {
         global $logger;
 
-        $logger->info("sellAll($theTime) purchaseTime=" . $this->purchaseTimeInEastern);
+        $logger->info("sellAll($phxTime, $easternTime) purchaseTime=" . $this->purchaseTimeInEastern);
 
-        $phoenixTime = substr($this->purchaseTimeInPhoenix, 0, 10) . ' ' . $theTime;
-        $easternTime = substr($this->purchaseTimeInEastern, 0, 10) . ' ' . $theTime;
+        $phoenixTime = substr($this->purchaseTimeInPhoenix, 0, 10) . ' ' . $phxTime;
+        $easternTime = substr($this->purchaseTimeInEastern, 0, 10) . ' ' . $easternTime;
         $this->sell($this->lastAction, $phoenixTime, $easternTime);
     }
 
@@ -67,13 +58,13 @@ class BuySellHelper
         if ($this->lastAction == "") {
             return; // nothing to sell
         }
-
+        $logger->info("sell($action, $timeInPhoenix, $timeInEastern)");
         $callChain = $ApiHistoryHelper->getTheApiHistory($action, "getOptionChain", $timeInPhoenix);
         if ($callChain == null) {
             $logger->info("cannout sell $action phx=$timeInPhoenix est=$timeInEastern - no optionChainFound");
             $this->balance += 100 * $this->bestLast;
             print("date|method|action|symbol|last|strike|balance\n");
-            print("$this->purchaseTimeInEastern|sell|$this->lastAction|$this->bestSymbol|$" . number_format($this->bestStrikePrice, 2));
+            print("$timeInEastern|sell|$this->lastAction|$this->bestSymbol|$" . number_format($this->bestStrikePrice, 2));
             print("|$" . number_format($this->bestLast, 2) . "|$" . number_format($this->balance, 2) . "|Cannot found optionChain\n");
             $this->lastAction = "";
 
@@ -90,7 +81,7 @@ class BuySellHelper
 
         $this->balance += 100 * $optionsFound['last'];
         print("date|method|action|symbol|last|strike|balance\n");
-        print("$this->purchaseTimeInEastern|sell|$this->lastAction|$this->bestSymbol|$" . number_format($optionsFound['strikePrice'], 2));
+        print("$timeInEastern|sell|$this->lastAction|$this->bestSymbol|$" . number_format($optionsFound['strikePrice'], 2));
         print("|$" . number_format($optionsFound['last'], 2) . "|$" . number_format($this->balance, 2) . "\n");
         $this->lastAction = ""; // we sold
     }
@@ -128,10 +119,11 @@ class BuySellHelper
     // sell
     public function processMessage(array $thisMessage)
     {
-        global $logger;
-        global $TdaOptionChain;
+//         global $logger;
+//         global $TdaOptionChain;
         // global $ApiHistory;
-        if ($thisMessage['message_type'] == "alertFromTradingView PUT") {
+        
+        if (stripos($thisMessage['message_type'], "PUT")) {
             $action = "PUT";
             $otherAction = "CALL";
         } else {
@@ -150,6 +142,6 @@ class BuySellHelper
     } // processMessage
 }
 
-$BuySellHelper = new BuySellHelper();
+
 // $BuySellHelper->init();
 ?>
